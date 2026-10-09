@@ -128,7 +128,7 @@ function sugerencias() {
 }
 function textoParte(k) {
   const p = db.partes[k];
-  let s = '*PARTE DIARIO · ' + dmy(k) + '*\nRedactado por: ' + (db.redactor || 'YIYO') + '\n';
+  let s = '*PARTE DIARIO · ' + dmy(k) + '*\n' + (db.redactor ? 'Redactado por: ' + db.redactor + '\n' : '');
   for (const f of p.fincas) {
     s += '\n*' + f.nombre + '*\n';
     for (const t of f.tareas) s += t.nombre + ': ' + t.n + '\n';
@@ -258,9 +258,13 @@ const waUrl = t => 'https://wa.me/?text=' + encodeURIComponent(t);
 /* ───────── Vistas ───────── */
 function cabeceraFecha(k) {
   const h = hoyK();
-  const et = k === h ? 'Hoy · ' + dmy(k) : k === addDays(h, -1) ? 'Ayer · ' + dmy(k) : k === addDays(h, 1) ? 'Mañana · ' + dmy(k) : corto(k) + '/' + parse(k).getFullYear();
-  return et;
+  const DSC = ['dg.', 'dl.', 'dt.', 'dc.', 'dj.', 'dv.', 'ds.'];
+  if (k === h) return 'Avui · ' + dmy(k);
+  if (k === addDays(h, -1)) return 'Ahir · ' + dmy(k);
+  if (k === addDays(h, 1)) return 'Demà · ' + dmy(k);
+  return DSC[parse(k).getDay()] + ' ' + dmy(k);
 }
+const cabRed = () => db.redactor ? `Redactado por <b style="color:var(--fg);font-weight:700">${esc(db.redactor)}</b>` : '';
 function vMain(k) {
   const p = parteDe(k), tot = p ? totalParte(p) : 0;
   const ant = anteriorA(k);
@@ -298,7 +302,7 @@ function vMain(k) {
     }).join('') + `<button class="btn" style="min-height:64px;border-style:dashed;border-radius:20px;background:var(--sf)" data-a="addfinca">${IC.plus(26)}Añadir finca</button>`;
   }
   return `<div class="top">
-    <div class="row"><div style="flex:1;font-size:18px;color:var(--mut)">Redactado por <b style="color:var(--fg);font-weight:700">${esc(db.redactor || 'YIYO')}</b></div>
+    <div class="row"><div id="redcab" style="flex:1;font-size:18px;color:var(--mut)">${cabRed()}</div>
       <a class="ib" href="#/historial" aria-label="Historial">${IC.hist}</a><a class="ib" href="#/ajustes" aria-label="Ajustes">${IC.set}</a></div>
     <div class="row">
       <button class="ib" aria-label="Día anterior" data-a="dia" data-d="-1">${IC.prev}</button>
@@ -369,7 +373,7 @@ function vAjustes() {
       <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px"><div class="stat"><b>${r.partes}</b><span>partes</span></div><div class="stat"><b>${r.jornadas}</b><span>jornadas</span></div><div class="stat"><b>${fmt1(r.media)}</b><span>media/día</span></div></div>
       <a class="btn ghost" href="${waUrl('*RESUMEN · ' + r.etiqueta + '*\nPartes: ' + r.partes + '\nJornadas: ' + r.jornadas + '\nMedia diaria: ' + fmt1(r.media))}" target="_blank" rel="noopener">${IC.wa(24)}Compartir resumen</a></section>
     <section class="card" style="gap:8px"><label for="red" style="font-size:22px;font-weight:800">Redactado por</label>
-      <input id="red" type="text" value="${esc(db.redactor || 'YIYO')}" style="height:56px;padding:0 16px;border:2px solid var(--bd);border-radius:14px;background:var(--bg);font-size:20px;font-weight:700;text-transform:uppercase"></section>
+      <input id="red" type="text" value="${esc(db.redactor || '')}" placeholder="En blanco" style="height:56px;padding:0 16px;border:2px solid var(--bd);border-radius:14px;background:var(--bg);font-size:20px;font-weight:700;text-transform:uppercase"></section>
   </div>`;
 }
 
@@ -503,7 +507,7 @@ document.addEventListener('change', e => {
 });
 document.addEventListener('input', e => {
   const t = e.target;
-  if (t.id === 'red') { db.redactor = up(t.value) || 'YIYO'; guardar(); }
+  if (t.id === 'red') { db.redactor = up(t.value); guardar(); const cab = $('#redcab'); if (cab) cab.innerHTML = cabRed(); }
   else if (t.id === 'q') { ui.q = t.value; render(); }
   else if (t.id === 'nt') { ui.sheet.q = t.value; $('#sugs').innerHTML = vSugs(t.value); }
 });
