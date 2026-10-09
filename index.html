@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F2F3EF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D100E" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Parte Diario">
+<title>Parte Diario</title>
+<style>
+:root{
+  --bg:#F2F3EF;--sf:#FFFFFF;--fg:#121712;--mut:#454D45;--bd:#C4CAC1;--ac:#1D6630;--onac:#FFFFFF;--acs:#DCEDDF;--btn:#E8EBE5;
+  --dn:#B3261E;--ondn:#FFFFFF;--dnsoft:#FBE4E1;--scrim:rgba(12,16,12,.55);--toast:#1B211C;--ontoast:#FFFFFF;--toastac:#8FE0A2;
+  --t0:#E2EDF8;--b0:#93B4D6;--t1:#FAEAD5;--b1:#D6AC72;--t2:#E3F0DF;--b2:#97C08F;--t3:#F0E6F6;--b3:#BFA2D3;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0D100E;--sf:#1B201C;--fg:#F1F4EF;--mut:#B9C1B7;--bd:#3B443C;--ac:#7BD58F;--onac:#08170C;--acs:#1E3824;--btn:#272E28;
+  --dn:#FF8A80;--ondn:#2A0805;--dnsoft:#3A1A17;--scrim:rgba(0,0,0,.72);--toast:#E9EEE7;--ontoast:#121712;--toastac:#1D6630;
+  --t0:#13253A;--b0:#2E5375;--t1:#33240E;--b1:#6B5023;--t2:#14301A;--b2:#336239;--t3:#2A1C33;--b3:#5A3F6C;
+}}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--fg)}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-weight:500;font-size:16px;overscroll-behavior:none}
+button,input{font-family:inherit;color:inherit}
+button{cursor:pointer}
+button:active{filter:brightness(.92)}
+button:focus-visible,a:focus-visible,input:focus-visible,label:focus-within{outline:3px solid var(--ac);outline-offset:2px}
+#app{position:fixed;inset:0;max-width:600px;margin:0 auto;display:flex;flex-direction:column;background:var(--bg);overflow:hidden}
+.top{padding:calc(env(safe-area-inset-top) + 12px) max(16px,env(safe-area-inset-left)) 12px max(16px,env(safe-area-inset-left));display:flex;flex-direction:column;gap:8px;border-bottom:2px solid var(--bd);background:var(--bg)}
+.row{display:flex;align-items:center;gap:8px}
+.ib{width:56px;height:56px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border:0;border-radius:16px;background:var(--btn);color:var(--fg);text-decoration:none;padding:0}
+.body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px max(16px,env(safe-area-inset-left)) 24px;display:flex;flex-direction:column;gap:16px}
+.bottom{background:var(--sf);border-top:2px solid var(--bd);padding:10px max(16px,env(safe-area-inset-left)) calc(env(safe-area-inset-bottom) + 10px);display:flex;flex-direction:column;gap:10px}
+.muted{color:var(--mut);font-size:18px}
+h1{font-size:28px;font-weight:800;line-height:1.15}
+h2{font-size:22px;font-weight:800}
+.card{background:var(--sf);border:2px solid var(--bd);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.btn{white-space:nowrap;min-height:56px;display:flex;align-items:center;justify-content:center;gap:8px;border:2px solid var(--bd);border-radius:16px;background:var(--btn);color:var(--fg);font-size:20px;font-weight:800;padding:0 12px;text-decoration:none}
+.btn.pri{background:var(--ac);border-color:var(--ac);color:var(--onac)}
+.btn.sec{background:var(--acs);border-color:var(--ac)}
+.btn.ghost{background:transparent}
+.btn.dn{background:transparent;border-color:var(--dn);color:var(--dn)}
+.btn[disabled]{opacity:.4}
+.finca{border:2px solid;border-radius:20px;padding:10px;display:flex;flex-direction:column;gap:10px}
+.tarea{background:var(--sf);border-radius:16px;padding:14px 12px 12px 14px;display:flex;flex-direction:column;gap:12px}
+.tarea .nm{font-size:22px;font-weight:700;line-height:1.2;overflow-wrap:anywhere}
+.cnt{width:64px;height:56px;display:flex;align-items:center;justify-content:center;border:2px solid var(--bd);border-radius:14px;background:var(--btn);padding:0}
+.cnt.plus{border-color:var(--ac);background:var(--acs);color:var(--ac)}
+.num{width:76px;height:56px;padding:0;text-align:center;border:2px solid var(--bd);border-radius:14px;background:var(--bg);font-size:30px;font-weight:800}
+.dots{width:56px;height:56px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border:2px solid var(--bd);border-radius:14px;background:transparent;padding:0}
+.add{height:56px;display:flex;align-items:center;justify-content:center;gap:8px;border:2px dashed;border-radius:16px;background:transparent;font-size:20px;font-weight:800}
+.scrim{position:absolute;inset:0;border:0;background:var(--scrim);z-index:20}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:30;display:flex;flex-direction:column;gap:8px;padding:12px max(16px,env(safe-area-inset-left)) calc(env(safe-area-inset-bottom) + 14px);border-radius:28px 28px 0 0;background:var(--sf);color:var(--fg);max-height:92%}
+.grab{width:44px;height:5px;border-radius:3px;align-self:center;background:var(--bd)}
+.sbtn{height:64px;display:flex;align-items:center;gap:16px;padding:0 20px;border:0;border-radius:16px;background:var(--btn);color:var(--fg);font-size:22px;font-weight:700;text-align:left}
+.sbtn[disabled]{opacity:.4}
+.dlg{position:absolute;left:16px;right:16px;top:20%;z-index:30;display:flex;flex-direction:column;gap:10px;padding:24px 20px 20px;border-radius:24px;background:var(--sf);box-shadow:0 16px 40px rgba(0,0,0,.35)}
+.toast{position:absolute;left:12px;right:12px;z-index:40;display:flex;align-items:center;gap:8px;padding:8px 8px 8px 18px;border-radius:16px;background:var(--toast);color:var(--ontoast);box-shadow:0 10px 28px rgba(0,0,0,.3);bottom:calc(env(safe-area-inset-bottom) + 170px);font-size:18px}
+.toast.low{bottom:calc(env(safe-area-inset-bottom) + 24px)}
+.toast .u{height:56px;padding:0 16px;border:0;border-radius:12px;background:transparent;color:var(--toastac);font-size:20px;font-weight:800}
+.sug{min-height:60px;flex-shrink:0;display:flex;align-items:center;gap:12px;padding:8px 10px 8px 16px;border:0;border-radius:14px;background:var(--btn);color:var(--fg);font-size:20px;font-weight:700;text-align:left}
+.txt{height:60px;min-width:0;padding:0 14px;border:2px solid var(--ac);border-radius:14px;background:var(--bg);font-size:20px;font-weight:700;text-transform:uppercase;width:100%}
+.day{min-height:80px;display:flex;align-items:center;gap:12px;padding:10px 14px 10px 18px;border-radius:18px;background:var(--sf);border:2px solid var(--sf);color:var(--fg);text-decoration:none}
+.day.hoy{border-color:var(--ac)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;border-radius:16px;background:var(--btn)}
+.seg button{height:52px;border:0;border-radius:12px;background:transparent;font-size:20px;font-weight:800}
+.seg button[aria-pressed=true]{background:var(--ac);color:var(--onac)}
+.stat{background:var(--bg);border-radius:14px;padding:12px 10px;display:flex;flex-direction:column;gap:4px}
+.stat b{font-size:32px;font-weight:800;line-height:1}
+.stat span{font-size:18px;color:var(--mut)}
+.prev{background:var(--sf);border:2px solid var(--bd);border-radius:18px;padding:16px 18px;font-size:18px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<input type="file" id="file" accept="application/json,.json" class="sr" tabindex="-1">
+<script>
+'use strict';
+/* ───────── Utilidades ───────── */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const up = s => String(s || '').trim().replace(/\s+/g, ' ').toLocaleUpperCase('es');
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const pad = n => String(n).padStart(2, '0');
+const key = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const parse = k => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); };
+const addDays = (k, n) => { const d = parse(k); d.setDate(d.getDate() + n); return key(d); };
+const hoyK = () => key(new Date());
+const DS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+const DL = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+const MS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+const dmy = k => { const d = parse(k); return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear(); };
+const dm = k => { const d = parse(k); return pad(d.getDate()) + '/' + pad(d.getMonth() + 1); };
+const corto = k => DS[parse(k).getDay()] + ' ' + dm(k);
+const largo = k => { const d = parse(k); return DL[d.getDay()] + ', ' + d.getDate() + ' de ' + MS[d.getMonth()].toLowerCase() + ' de ' + d.getFullYear(); };
+const pl = n => n === 1 ? '1 persona' : n + ' personas';
+const fmt1 = n => (Math.round(n * 10) / 10).toString().replace('.', ',');
+
+/* ───────── Datos ───────── */
+const LS = 'parteDiario.v1';
+let db = cargar();
+function vacioDB() { return { v: 1, redactor: 'YIYO', partes: {}, ultimaCopia: null, ocultarInstalar: false }; }
+function cargar() {
+  try {
+    const r = JSON.parse(localStorage.getItem(LS));
+    if (r && r.partes) return Object.assign(vacioDB(), r);
+  } catch (e) {}
+  return vacioDB();
+}
+function guardar() {
+  try { localStorage.setItem(LS, JSON.stringify(db)); }
+  catch (e) { alert('No se pudo guardar en el móvil. Exporta una copia desde Ajustes.'); }
+}
+const totalFinca = f => f.tareas.reduce((a, k) => a + (k.n || 0), 0);
+const totalParte = p => p.fincas.reduce((a, f) => a + totalFinca(f), 0);
+const nTareas = p => p.fincas.reduce((a, f) => a + f.tareas.length, 0);
+const fechas = () => Object.keys(db.partes).sort();
+function anteriorA(k) { const l = fechas().filter(x => x < k); return l.length ? l[l.length - 1] : null; }
+function sugerencias() {
+  const m = {};
+  for (const p of Object.values(db.partes)) for (const f of p.fincas) for (const t of f.tareas) m[t.nombre] = (m[t.nombre] || 0) + 1;
+  return Object.entries(m).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'es')).map(e => e[0]);
+}
+function textoParte(k) {
+  const p = db.partes[k];
+  let s = '*PARTE DIARIO · ' + dmy(k) + '*\nRedactado por: ' + (db.redactor || 'YIYO') + '\n';
+  for (const f of p.fincas) {
+    s += '\n*' + f.nombre + '*\n';
+    for (const t of f.tareas) s += t.nombre + ': ' + t.n + '\n';
+    s += 'Total finca: ' + totalFinca(f) + '\n';
+  }
+  return s + '\n*TOTAL: ' + pl(totalParte(p)) + '*';
+}
+function resumen(per) {
+  const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  const fin = key(hoy);
+  let ini, etiqueta;
+  if (per === 'mes') {
+    ini = key(new Date(hoy.getFullYear(), hoy.getMonth(), 1));
+    etiqueta = MS[hoy.getMonth()] + ' ' + hoy.getFullYear() + ' (hasta hoy)';
+  } else {
+    const off = (hoy.getDay() + 6) % 7;
+    ini = addDays(fin, -off);
+    const a = parse(ini), b = hoy;
+    etiqueta = 'Semana del ' + a.getDate() + (a.getMonth() !== b.getMonth() ? ' de ' + MS[a.getMonth()].toLowerCase() : '') + ' al ' + b.getDate() + ' de ' + MS[b.getMonth()].toLowerCase();
+  }
+  const ks = fechas().filter(k => k >= ini && k <= fin);
+  const jor = ks.reduce((a, k) => a + totalParte(db.partes[k]), 0);
+  return { etiqueta, partes: ks.length, jornadas: jor, media: ks.length ? jor / ks.length : 0 };
+}
+
+/* ───────── Estado de interfaz ───────── */
+const ui = { sheet: null, toast: null, per: 'semana', modo: 'conservar', copiado: false, msgInstalar: '', texto: '' };
+let toastT = null, copiaT = null, deferred = null;
+const ruta = () => {
+  const h = location.hash.replace(/^#\/?/, '').split('/');
+  const f = /^\d{4}-\d{2}-\d{2}$/.test(h[1] || '') ? h[1] : hoyK();
+  if (h[0] === 'historial' || h[0] === 'ajustes') return { v: h[0] };
+  if (h[0] === 'compartir') return { v: 'compartir', k: f };
+  return { v: 'main', k: /^\d{4}-\d{2}-\d{2}$/.test(h[1] || '') ? h[1] : hoyK() };
+};
+const ir = h => { ui.sheet = null; ui.toast = null; location.hash = h; };
+
+/* ───────── Iconos ───────── */
+const I = (p, w = 28, sw = 2.3, fill) => `<svg width="${w}" height="${w}" viewBox="0 0 24 24" fill="${fill ? 'currentColor' : 'none'}" stroke="${fill ? 'none' : 'currentColor'}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const IC = {
+  hist: I('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/>'),
+  set: I('<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>'),
+  prev: I('<path d="M15 18l-6-6 6-6"/>', 30, 2.6),
+  next: I('<path d="M9 18l6-6-6-6"/>', 30, 2.6),
+  down: I('<path d="M6 9l6 6 6-6"/>', 22, 2.6),
+  cal: I('<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>', 36, 2.2),
+  plus: (w = 26, sw = 2.8) => I('<path d="M12 5v14M5 12h14"/>', w, sw),
+  minus: I('<path d="M5 12h14"/>', 30, 3),
+  plus3: I('<path d="M12 5v14M5 12h14"/>', 30, 3),
+  more: I('<circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/>', 28, 0, true),
+  copy: (w = 24) => I('<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>', w),
+  wa: (w = 26) => I('<path d="M21 12a8.5 8.5 0 0 1-12.6 7.4L3 21l1.6-5.2A8.5 8.5 0 1 1 21 12z"/>', w),
+  edit: I('<path d="M4 20h4L19 9l-4-4L4 16v4z"/>'),
+  up: I('<path d="M12 19V5M5 12l7-7 7 7"/>', 28, 2.5),
+  dn: I('<path d="M12 5v14M19 12l-7 7-7-7"/>', 28, 2.5),
+  trash: (w = 28) => I('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', w),
+  x: I('<path d="M6 6l12 12M18 6L6 18"/>', 28, 2.6),
+  search: I('<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>', 26, 2.4),
+  exp: I('<path d="M12 4v12M6 10l6 6 6-6M4 20h16"/>', 24, 2.5),
+  imp: I('<path d="M12 20V8M6 14l6-6 6 6M4 4h16"/>', 24, 2.5),
+  inst: I('<rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M12 7v7M9 11l3 3 3-3"/>')
+};
+
+/* ───────── Acciones sobre datos ───────── */
+function parteDe(k) { return db.partes[k]; }
+function crearParte(k) {
+  const ant = anteriorA(k);
+  const nombres = ant ? db.partes[ant].fincas.map(f => f.nombre) : ['UTXESA 1', 'UTXESA 2', 'UTXESA 3'];
+  db.partes[k] = { creado: Date.now(), fincas: nombres.map((n, i) => ({ id: uid(), nombre: n, c: i % 4, tareas: [] })) };
+  guardar(); render();
+}
+function copiarAnterior(k) {
+  const ant = anteriorA(k);
+  if (!ant) return;
+  const cero = ui.modo === 'cero';
+  db.partes[k] = { creado: Date.now(), fincas: db.partes[ant].fincas.map(f => ({ id: uid(), nombre: f.nombre, c: f.c, tareas: f.tareas.map(t => ({ id: uid(), nombre: t.nombre, n: cero ? 0 : t.n })) })) };
+  guardar(); render();
+}
+function setN(k, fi, ti, n) { db.partes[k].fincas[fi].tareas[ti].n = Math.max(0, Math.min(999, n)); guardar(); }
+function anadirTarea(k, fi, nombre) {
+  const n = up(nombre);
+  if (!n) return;
+  db.partes[k].fincas[fi].tareas.push({ id: uid(), nombre: n, n: 1 });
+  guardar(); ui.sheet = null; render();
+}
+function mover(k, sel, d) {
+  const p = db.partes[k];
+  const arr = sel.t === 'tarea' ? p.fincas[sel.fi].tareas : p.fincas;
+  const i = sel.t === 'tarea' ? sel.ti : sel.fi, j = i + d;
+  if (j < 0 || j >= arr.length) return;
+  [arr[i], arr[j]] = [arr[j], arr[i]];
+  guardar(); ui.sheet = null; render();
+}
+function borrar(k, sel) {
+  const p = db.partes[k];
+  const item = sel.t === 'tarea' ? p.fincas[sel.fi].tareas.splice(sel.ti, 1)[0] : p.fincas.splice(sel.fi, 1)[0];
+  guardar(); ui.sheet = null;
+  ui.toast = { t: sel.t, fi: sel.fi, ti: sel.ti, item, k };
+  clearTimeout(toastT); toastT = setTimeout(() => { ui.toast = null; render(); }, 9000);
+  render();
+}
+function deshacer() {
+  const b = ui.toast; if (!b || !db.partes[b.k]) return;
+  const p = db.partes[b.k];
+  if (b.t === 'tarea') { if (p.fincas[b.fi]) p.fincas[b.fi].tareas.splice(b.ti, 0, b.item); }
+  else p.fincas.splice(b.fi, 0, b.item);
+  guardar(); ui.toast = null; clearTimeout(toastT); render();
+}
+function renombrar(k, sel, nombre) {
+  const n = up(nombre); if (!n) return;
+  const p = db.partes[k];
+  if (sel.t === 'tarea') p.fincas[sel.fi].tareas[sel.ti].nombre = n;
+  else if (sel.t === 'finca') p.fincas[sel.fi].nombre = n;
+  else p.fincas.push({ id: uid(), nombre: n, c: p.fincas.length % 4, tareas: [] });
+  guardar(); ui.sheet = null; render();
+}
+async function copiarTexto(txt) {
+  try { await navigator.clipboard.writeText(txt); }
+  catch (e) {
+    const ta = document.createElement('textarea'); ta.value = txt; ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (_) {} ta.remove();
+  }
+  ui.copiado = true; render(); clearTimeout(copiaT); copiaT = setTimeout(() => { ui.copiado = false; render(); }, 2000);
+}
+const waUrl = t => 'https://wa.me/?text=' + encodeURIComponent(t);
+
+/* ───────── Vistas ───────── */
+function cabeceraFecha(k) {
+  const h = hoyK();
+  const et = k === h ? 'Hoy · ' + dmy(k) : k === addDays(h, -1) ? 'Ayer · ' + dmy(k) : k === addDays(h, 1) ? 'Mañana · ' + dmy(k) : corto(k) + '/' + parse(k).getFullYear();
+  return et;
+}
+function vMain(k) {
+  const p = parteDe(k), tot = p ? totalParte(p) : 0;
+  const ant = anteriorA(k);
+  let cuerpo = '';
+  if (!p) {
+    const ap = ant ? db.partes[ant] : null;
+    cuerpo = `<div style="display:flex;flex-direction:column;gap:16px;padding:12px 0">
+      <div style="width:72px;height:72px;border-radius:36px;background:var(--acs);color:var(--ac);display:flex;align-items:center;justify-content:center">${IC.cal}</div>
+      <div><h1>${k === hoyK() ? 'Aún no hay parte de hoy' : 'No hay parte de este día'}</h1><div class="muted" style="margin-top:4px">${largo(k)}</div></div>
+      <button class="btn pri" style="height:64px;font-size:22px;border-radius:16px" data-a="crear">${IC.plus(28)}Crear parte${k === hoyK() ? ' de hoy' : ''}</button>
+      ${ap ? `<div class="card"><div><h2>¿Igual que antes?</h2><div class="muted">${corto(ant)} · ${ap.fincas.length} fincas · ${nTareas(ap)} tareas</div></div>
+        <label style="min-height:56px;display:flex;align-items:center;gap:14px;padding:0 14px;border:2px solid ${ui.modo === 'conservar' ? 'var(--ac)' : 'var(--bd)'};border-radius:14px;font-size:20px;font-weight:700"><input type="radio" name="modo" value="conservar" ${ui.modo === 'conservar' ? 'checked' : ''} style="width:26px;height:26px;accent-color:var(--ac)">Conservar cantidades</label>
+        <label style="min-height:56px;display:flex;align-items:center;gap:14px;padding:0 14px;border:2px solid ${ui.modo === 'cero' ? 'var(--ac)' : 'var(--bd)'};border-radius:14px;font-size:20px;font-weight:700"><input type="radio" name="modo" value="cero" ${ui.modo === 'cero' ? 'checked' : ''} style="width:26px;height:26px;accent-color:var(--ac)">Poner cantidades a 0</label>
+        <button class="btn sec" style="height:60px" data-a="copiarant">${IC.copy(26)}Copiar del día anterior</button></div>` : ''}
+    </div>`;
+  } else {
+    cuerpo = p.fincas.map((f, fi) => {
+      const c = (f.c || 0) % 4;
+      return `<section class="finca" style="background:var(--t${c});border-color:var(--b${c})">
+        <div style="display:flex;align-items:center;gap:10px;padding:2px 2px 2px 8px">
+          <div style="flex:1;min-width:0"><h2 style="font-size:24px;line-height:1.15;overflow-wrap:anywhere">${esc(f.nombre)}</h2><div class="muted">${f.tareas.length === 1 ? '1 tarea' : f.tareas.length + ' tareas'}</div></div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end"><div class="muted">Total finca</div><div style="font-size:34px;font-weight:800;line-height:1">${totalFinca(f)}</div></div>
+          <button class="ib" style="border:2px solid var(--b${c});background:var(--sf)" aria-label="Opciones de la finca ${esc(f.nombre)}" data-a="menu" data-t="finca" data-fi="${fi}">${IC.more}</button>
+        </div>
+        ${f.tareas.map((t, ti) => `<div class="tarea"><div class="nm">${esc(t.nombre)}</div>
+          <div class="row">
+            <button class="cnt" aria-label="Quitar una persona" data-a="dec" data-fi="${fi}" data-ti="${ti}">${IC.minus}</button>
+            <input class="num" type="text" inputmode="numeric" value="${t.n}" aria-label="Personas en ${esc(t.nombre)}" data-a="set" data-fi="${fi}" data-ti="${ti}">
+            <button class="cnt plus" aria-label="Añadir una persona" data-a="inc" data-fi="${fi}" data-ti="${ti}">${IC.plus3}</button>
+            <div style="flex:1"></div>
+            <button class="dots" aria-label="Opciones de la tarea ${esc(t.nombre)}" data-a="menu" data-t="tarea" data-fi="${fi}" data-ti="${ti}">${IC.more}</button>
+          </div></div>`).join('')}
+        <button class="add" style="border-color:var(--b${c})" data-a="addtarea" data-fi="${fi}">${IC.plus(26)}Añadir tarea</button>
+      </section>`;
+    }).join('') + `<button class="btn" style="min-height:64px;border-style:dashed;border-radius:20px;background:var(--sf)" data-a="addfinca">${IC.plus(26)}Añadir finca</button>`;
+  }
+  return `<div class="top">
+    <div class="row"><div style="flex:1;font-size:18px;color:var(--mut)">Redactado por <b style="color:var(--fg);font-weight:700">${esc(db.redactor || 'YIYO')}</b></div>
+      <a class="ib" href="#/historial" aria-label="Historial">${IC.hist}</a><a class="ib" href="#/ajustes" aria-label="Ajustes">${IC.set}</a></div>
+    <div class="row">
+      <button class="ib" aria-label="Día anterior" data-a="dia" data-d="-1">${IC.prev}</button>
+      <div style="position:relative;flex:1;min-width:0">
+        <button class="btn" style="width:100%;height:56px;font-size:clamp(17px,5vw,22px);gap:6px;padding:0 6px;background:var(--sf)" aria-label="Elegir fecha" data-a="fecha">${esc(cabeceraFecha(k))}${IC.down}</button>
+        <input type="date" id="datepick" value="${k}" aria-label="Elegir fecha" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;cursor:pointer">
+      </div>
+      <button class="ib" aria-label="Día siguiente" data-a="dia" data-d="1">${IC.next}</button>
+    </div></div>
+    <div class="body" id="scroller">${cuerpo}</div>
+    <div class="bottom">
+      <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:20px;font-weight:800;letter-spacing:.06em">TOTAL</div><div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:44px;font-weight:800;line-height:1">${tot}</span><span class="muted">personas</span></div></div>
+      ${p ? `<div style="display:flex;gap:10px"><a class="btn pri" style="flex:1.3" href="#/compartir/${k}" aria-label="Compartir por WhatsApp">${IC.wa()}WhatsApp</a>
+        <button class="btn" style="flex:1;font-size:18px;padding:0 6px;gap:6px" data-a="copiar">${IC.copy()}${ui.copiado ? '¡Copiado!' : 'Copiar texto'}</button></div>`
+        : `<div class="muted" style="height:56px;display:flex;align-items:center">Crea el parte para poder compartirlo.</div>`}
+    </div>`;
+}
+function vHistorial() {
+  const ks = fechas().reverse(), h = hoyK();
+  let grupos = '', mes = '';
+  const q = (ui.q || '').trim().toUpperCase();
+  for (const k of ks) {
+    const p = db.partes[k];
+    if (q) {
+      const hay = dmy(k).includes(q) || corto(k).toUpperCase().includes(q) || p.fincas.some(f => f.nombre.includes(q) || f.tareas.some(t => t.nombre.includes(q)));
+      if (!hay) continue;
+    }
+    const d = parse(k), m = MS[d.getMonth()] + ' ' + d.getFullYear();
+    if (m !== mes) { mes = m; grupos += `<h2 style="margin:14px 4px 2px;font-size:18px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)">${m}</h2>`; }
+    const pre = k === h ? 'Hoy · ' : k === addDays(h, -1) ? 'Ayer · ' : '';
+    grupos += `<a class="day${k === h ? ' hoy' : ''}" href="#/d/${k}"><div style="flex:1;min-width:0"><div style="font-size:22px;font-weight:800">${corto(k)}</div><div class="muted">${pre}${p.fincas.length} fincas · ${nTareas(p)} tareas</div></div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:34px;font-weight:800;line-height:1">${totalParte(p)}</div><div class="muted">personas</div></div>${I('<path d="M9 18l6-6-6-6"/>', 24, 2.6)}</a>`;
+  }
+  if (!grupos) grupos = `<div class="muted" style="padding:24px 4px">${ks.length ? 'Ningún parte coincide con la búsqueda.' : 'Todavía no hay partes guardados.'}</div>`;
+  return `<div class="top"><div class="row" style="gap:12px"><a class="ib" href="#/" aria-label="Volver al parte">${IC.prev}</a><h1>Historial</h1></div>
+    <div style="position:relative;display:flex;align-items:center"><span style="position:absolute;left:16px;color:var(--mut);display:flex">${IC.search}</span>
+    <input id="q" type="search" aria-label="Buscar partes" placeholder="Buscar fecha o tarea" value="${esc(ui.q || '')}" style="width:100%;height:56px;padding:0 16px 0 54px;border:2px solid var(--bd);border-radius:16px;background:var(--sf);font-size:20px;font-weight:600"></div></div>
+    <div class="body" id="scroller" style="gap:8px;padding-top:8px">${grupos}</div>`;
+}
+function vCompartir(k) {
+  if (!db.partes[k]) return vMain(k);
+  const t = textoParte(k);
+  return `<div class="top"><div class="row" style="gap:12px"><a class="ib" href="#/d/${k}" aria-label="Volver al parte">${IC.prev}</a>
+    <div style="flex:1;min-width:0"><h1 style="font-size:26px">Vista previa</h1><div class="muted">Así se enviará el parte</div></div></div></div>
+    <div class="body"><div class="prev">${esc(t)}</div></div>
+    <div class="bottom">
+      <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:20px;font-weight:800;letter-spacing:.06em">TOTAL</div><div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:44px;font-weight:800;line-height:1">${totalParte(db.partes[k])}</span><span class="muted">personas</span></div></div>
+      <a class="btn pri" style="height:60px;font-size:21px" href="${waUrl(t)}" target="_blank" rel="noopener">${IC.wa()}Compartir por WhatsApp</a>
+      <button class="btn" data-a="copiar">${IC.copy()}${ui.copiado ? '¡Texto copiado!' : 'Copiar texto'}</button>
+    </div>`;
+}
+function vAjustes() {
+  const r = resumen(ui.per);
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  return `<div class="top"><div class="row" style="gap:12px"><a class="ib" href="#/" aria-label="Volver al parte">${IC.prev}</a><h1>Ajustes</h1></div></div>
+  <div class="body">
+    ${!standalone && !db.ocultarInstalar ? `<section class="card" style="background:var(--acs);border-color:var(--ac)">
+      <div style="display:flex;gap:12px;align-items:flex-start"><div style="width:48px;height:48px;flex-shrink:0;border-radius:14px;display:flex;align-items:center;justify-content:center;background:var(--ac);color:var(--onac)">${IC.inst}</div>
+      <div><h2 style="line-height:1.2">Instala Parte Diario</h2><div style="font-size:18px;line-height:1.35">Ábrela desde la pantalla de inicio, a pantalla completa y sin conexión.</div></div></div>
+      ${ui.msgInstalar ? `<div style="font-size:18px;line-height:1.35;font-weight:700">${esc(ui.msgInstalar)}</div>` : ''}
+      <div style="display:flex;gap:10px"><button class="btn pri" style="flex:1.4" data-a="instalar">Instalar</button><button class="btn ghost" style="flex:1;border-color:var(--ac)" data-a="ahoranoinst">Ahora no</button></div></section>` : ''}
+    <section class="card"><div><h2>Copia de seguridad</h2><div class="muted">Última copia: ${db.ultimaCopia ? dmy(db.ultimaCopia) : 'ninguna todavía'}</div></div>
+      <div style="display:flex;gap:10px"><button class="btn" style="flex:1;height:60px;border-color:transparent" data-a="exportar">${IC.exp}Exportar</button><button class="btn" style="flex:1;height:60px;border-color:transparent" data-a="importar">${IC.imp}Importar</button></div>
+      <div class="muted" style="line-height:1.35">Guarda el archivo en Drive o envíatelo por WhatsApp. Al importar, los partes se añaden o actualizan; nunca se borra ninguno.</div></section>
+    <section class="card"><h2>Resumen</h2>
+      <div class="seg" role="group" aria-label="Periodo del resumen"><button aria-pressed="${ui.per === 'semana'}" data-a="per" data-p="semana">Semana</button><button aria-pressed="${ui.per === 'mes'}" data-a="per" data-p="mes">Mes</button></div>
+      <div class="muted">${r.etiqueta}</div>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px"><div class="stat"><b>${r.partes}</b><span>partes</span></div><div class="stat"><b>${r.jornadas}</b><span>jornadas</span></div><div class="stat"><b>${fmt1(r.media)}</b><span>media/día</span></div></div>
+      <a class="btn ghost" href="${waUrl('*RESUMEN · ' + r.etiqueta + '*\nPartes: ' + r.partes + '\nJornadas: ' + r.jornadas + '\nMedia diaria: ' + fmt1(r.media))}" target="_blank" rel="noopener">${IC.wa(24)}Compartir resumen</a></section>
+    <section class="card" style="gap:8px"><label for="red" style="font-size:22px;font-weight:800">Redactado por</label>
+      <input id="red" type="text" value="${esc(db.redactor || 'YIYO')}" style="height:56px;padding:0 16px;border:2px solid var(--bd);border-radius:14px;background:var(--bg);font-size:20px;font-weight:700;text-transform:uppercase"></section>
+  </div>`;
+}
+
+/* ───────── Hojas y diálogos ───────── */
+function selInfo(k) {
+  const s = ui.sheet; if (!s || !db.partes[k]) return null;
+  const f = db.partes[k].fincas[s.fi]; if (!f) return null;
+  if (s.t === 'tarea') { const t = f.tareas[s.ti]; if (!t) return null; return { nombre: t.nombre, tipo: 'Tarea · ' + f.nombre + ' · ' + pl(t.n), n: t.n, f }; }
+  return { nombre: f.nombre, tipo: 'Finca · ' + f.tareas.length + ' tareas · ' + pl(totalFinca(f)), n: totalFinca(f), f };
+}
+function vSheet(k) {
+  const s = ui.sheet; if (!s) return '';
+  const scrim = `<button class="scrim" aria-label="Cerrar" data-a="cerrar"></button>`;
+  if (s.type === 'menu' || s.type === 'confirm') {
+    const i = selInfo(k); if (!i) return '';
+    if (s.type === 'menu') {
+      const arr = s.t === 'tarea' ? i.f.tareas : db.partes[k].fincas, pos = s.t === 'tarea' ? s.ti : s.fi;
+      return scrim + `<div class="sheet" role="dialog" aria-label="Opciones"><div class="grab"></div>
+        <div style="padding:8px 4px"><div class="muted">${esc(i.tipo)}</div><div style="font-size:24px;font-weight:800;line-height:1.2;overflow-wrap:anywhere">${esc(i.nombre)}</div></div>
+        <button class="sbtn" data-a="renombrar">${IC.edit}Renombrar</button>
+        <div style="display:flex;gap:8px"><button class="sbtn" style="flex:1" data-a="subir" ${pos === 0 ? 'disabled' : ''}>${IC.up}Subir</button><button class="sbtn" style="flex:1" data-a="bajar" ${pos === arr.length - 1 ? 'disabled' : ''}>${IC.dn}Bajar</button></div>
+        <button class="sbtn" style="border:2px solid var(--dn);background:transparent;color:var(--dn);font-weight:800" data-a="pedirborrar">${IC.trash()}Borrar</button>
+        <button class="btn ghost" style="height:60px;margin-top:4px;font-size:20px" data-a="cerrar">Cancelar</button></div>`;
+    }
+    const tit = s.t === 'tarea' ? '¿Borrar esta tarea?' : '¿Borrar esta finca?';
+    const txt = s.t === 'tarea' ? `Se quitarán ${pl(i.n)} de ${i.f.nombre}. Podrás deshacerlo.` : `Se borrarán sus ${i.f.tareas.length} tareas (${pl(i.n)}). Podrás deshacerlo.`;
+    return scrim + `<div class="dlg" role="alertdialog" aria-label="${tit}"><div style="width:56px;height:56px;border-radius:28px;display:flex;align-items:center;justify-content:center;background:var(--dnsoft);color:var(--dn)">${IC.trash(30)}</div>
+      <div style="font-size:26px;font-weight:800;line-height:1.2">${tit}</div><div style="font-size:22px;font-weight:700;line-height:1.2;overflow-wrap:anywhere">${esc(i.nombre)}</div><div class="muted" style="line-height:1.4">${esc(txt)}</div>
+      <div style="display:flex;gap:12px;margin-top:10px"><button class="btn" style="flex:1;height:60px" data-a="cerrar">Cancelar</button><button class="btn" style="flex:1;height:60px;background:var(--dn);border-color:var(--dn);color:var(--ondn)" data-a="borrar">Borrar</button></div></div>`;
+  }
+  if (s.type === 'add') {
+    const f = db.partes[k].fincas[s.fi]; if (!f) return '';
+    return scrim + `<div class="sheet" role="dialog" aria-label="Añadir tarea" style="top:110px;gap:12px"><div class="grab"></div>
+      <div class="row"><div style="flex:1;min-width:0"><div class="muted">en ${esc(f.nombre)}</div><div style="font-size:26px;font-weight:800;line-height:1.15">Añadir tarea</div></div><button class="ib" aria-label="Cerrar" data-a="cerrar">${IC.x}</button></div>
+      <label for="nt" style="font-size:18px;font-weight:700">Nombre de la tarea</label>
+      <div style="display:flex;gap:8px"><input id="nt" class="txt" type="text" placeholder="Escribe o elige abajo" autocomplete="off" autocapitalize="characters" value="${esc(s.q || '')}"><button class="btn pri" style="height:60px;border-radius:14px" data-a="addescrita">Añadir</button></div>
+      <div class="muted" style="padding-top:4px">Usadas antes · toca una para añadirla con 1 persona</div>
+      <div id="sugs" style="flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:8px">${vSugs(s.q)}</div></div>`;
+  }
+  if (s.type === 'nombre') {
+    const tit = s.t === 'nueva' ? 'Añadir finca' : s.t === 'tarea' ? 'Renombrar tarea' : 'Renombrar finca';
+    return scrim + `<div class="sheet" role="dialog" aria-label="${tit}" style="gap:12px"><div class="grab"></div>
+      <div class="row"><div style="flex:1;font-size:26px;font-weight:800">${tit}</div><button class="ib" aria-label="Cerrar" data-a="cerrar">${IC.x}</button></div>
+      <label for="nn" style="font-size:18px;font-weight:700">Nombre</label>
+      <input id="nn" class="txt" type="text" autocomplete="off" autocapitalize="characters" value="${esc(s.valor || '')}">
+      <button class="btn pri" style="height:60px" data-a="guardarnombre">Guardar</button></div>`;
+  }
+  if (s.type === 'importar') {
+    return scrim + `<div class="dlg" role="alertdialog" aria-label="Importar copia"><div style="font-size:26px;font-weight:800;line-height:1.2">¿Importar esta copia?</div>
+      <div class="muted" style="line-height:1.4">${s.n} partes en el archivo. Se añadirán a los de este móvil y, si hay un parte del mismo día, se actualizará con el del archivo. No se borrará ningún parte.</div>
+      <div style="display:flex;gap:12px;margin-top:10px"><button class="btn" style="flex:1;height:60px" data-a="cerrar">Cancelar</button><button class="btn pri" style="flex:1;height:60px" data-a="confimportar">Importar</button></div></div>`;
+  }
+  return '';
+}
+function vSugs(q) {
+  const Q = up(q || '');
+  const l = sugerencias().filter(n => !Q || n.includes(Q));
+  if (!l.length) return `<div class="muted" style="padding:8px 4px">${Q ? 'Sin coincidencias: pulsa «Añadir» para crear «' + esc(Q) + '».' : 'Aún no hay tareas usadas. Escribe una arriba.'}</div>`;
+  return l.map(n => `<button class="sug" data-a="sug" data-n="${esc(n)}"><span style="flex:1;line-height:1.2">${esc(n)}</span><span style="width:40px;height:40px;border-radius:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--ac);color:var(--onac)">${IC.plus(22, 3)}</span></button>`).join('');
+}
+function vToast() {
+  const b = ui.toast; if (!b) return '';
+  return `<div class="toast" role="status"><div style="flex:1;min-width:0;display:flex;flex-direction:column"><span>${b.t === 'tarea' ? 'Tarea borrada' : 'Finca borrada'}</span><span style="font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(b.item.nombre)}</span></div><button class="u" data-a="deshacer">Deshacer</button></div>`;
+}
+
+/* ───────── Render ───────── */
+let routeAnt = '';
+function render() {
+  const r = ruta(), app = $('#app');
+  const sc = $('#scroller'), top = sc && routeAnt === location.hash ? sc.scrollTop : 0;
+  let h;
+  if (r.v === 'historial') h = vHistorial();
+  else if (r.v === 'ajustes') h = vAjustes();
+  else if (r.v === 'compartir') h = vCompartir(r.k);
+  else h = vMain(r.k);
+  const bajo = r.v !== 'main' ? ' low' : '';
+  const foco = document.activeElement && document.activeElement.id;
+  app.innerHTML = h + (r.v === 'main' ? vSheet(r.k) : vSheet(r.k)) + vToast().replace('class="toast"', 'class="toast' + bajo + '"');
+  const n = $('#scroller'); if (n) n.scrollTop = top;
+  routeAnt = location.hash;
+  if (ui.sheet && ui.sheet.type === 'add' && !ui.sheet.enfocado) { ui.sheet.enfocado = true; const i = $('#nt'); i && i.focus(); }
+  if (ui.sheet && ui.sheet.type === 'nombre' && !ui.sheet.enfocado) { ui.sheet.enfocado = true; const i = $('#nn'); if (i) { i.focus(); i.select(); } }
+  if (foco === 'q') { const i = $('#q'); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } }
+}
+window.addEventListener('hashchange', () => { ui.sheet = null; ui.toast = null; ui.copiado = false; render(); window.scrollTo(0, 0); });
+
+/* ───────── Eventos ───────── */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-a]'); if (!el) return;
+  const a = el.dataset.a, r = ruta(), k = r.k, fi = +el.dataset.fi, ti = +el.dataset.ti;
+  const sel = () => ui.sheet && { t: ui.sheet.t, fi: ui.sheet.fi, ti: ui.sheet.ti };
+  switch (a) {
+    case 'crear': crearParte(k); break;
+    case 'copiarant': copiarAnterior(k); break;
+    case 'dia': ir('#/d/' + addDays(k, +el.dataset.d)); break;
+    case 'fecha': { const i = $('#datepick'); try { i.showPicker(); } catch (_) {} break; }
+    case 'inc': case 'dec': {
+      const t = db.partes[k].fincas[fi].tareas[ti];
+      setN(k, fi, ti, t.n + (a === 'inc' ? 1 : -1)); render(); break;
+    }
+    case 'menu': ui.sheet = { type: 'menu', t: el.dataset.t, fi, ti: isNaN(ti) ? undefined : ti }; render(); break;
+    case 'cerrar': ui.sheet = null; render(); break;
+    case 'subir': mover(k, sel(), -1); break;
+    case 'bajar': mover(k, sel(), 1); break;
+    case 'pedirborrar': ui.sheet.type = 'confirm'; render(); break;
+    case 'borrar': borrar(k, sel()); break;
+    case 'deshacer': deshacer(); break;
+    case 'renombrar': { const i = selInfo(k); ui.sheet = { type: 'nombre', t: ui.sheet.t, fi: ui.sheet.fi, ti: ui.sheet.ti, valor: i.nombre }; render(); break; }
+    case 'addfinca': ui.sheet = { type: 'nombre', t: 'nueva', valor: '' }; render(); break;
+    case 'guardarnombre': { const s = ui.sheet; renombrar(k, { t: s.t === 'nueva' ? 'nueva' : s.t, fi: s.fi, ti: s.ti }, $('#nn').value); break; }
+    case 'addtarea': ui.sheet = { type: 'add', fi, q: '' }; render(); break;
+    case 'addescrita': anadirTarea(k, ui.sheet.fi, $('#nt').value); break;
+    case 'sug': anadirTarea(k, ui.sheet.fi, el.dataset.n); break;
+    case 'copiar': copiarTexto(textoParte(k)); break;
+    case 'per': ui.per = el.dataset.p; render(); break;
+    case 'exportar': exportar(); break;
+    case 'importar': $('#file').value = ''; $('#file').click(); break;
+    case 'confimportar': aplicarImport(ui.sheet.datos); break;
+    case 'ahoranoinst': db.ocultarInstalar = true; guardar(); render(); break;
+    case 'instalar': instalar(); break;
+  }
+});
+document.addEventListener('change', e => {
+  const t = e.target, r = ruta();
+  if (t.name === 'modo') { ui.modo = t.value; render(); }
+  else if (t.id === 'datepick' && t.value) ir('#/d/' + t.value);
+  else if (t.dataset.a === 'set') {
+    const v = parseInt(String(t.value).replace(/\D/g, ''), 10);
+    setN(r.k, +t.dataset.fi, +t.dataset.ti, isNaN(v) ? 0 : v); render();
+  }
+});
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.id === 'red') { db.redactor = up(t.value) || 'YIYO'; guardar(); }
+  else if (t.id === 'q') { ui.q = t.value; render(); }
+  else if (t.id === 'nt') { ui.sheet.q = t.value; $('#sugs').innerHTML = vSugs(t.value); }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.id === 'nt') { e.preventDefault(); anadirTarea(ruta().k, ui.sheet.fi, e.target.value); }
+  else if (e.key === 'Enter' && e.target.id === 'nn') { e.preventDefault(); $('[data-a=guardarnombre]').click(); }
+  else if (e.key === 'Enter' && e.target.dataset && e.target.dataset.a === 'set') e.target.blur();
+  else if (e.key === 'Escape' && ui.sheet) { ui.sheet = null; render(); }
+});
+
+/* ───────── Copia de seguridad ───────── */
+function exportar() {
+  const blob = new Blob([JSON.stringify({ app: 'parte-diario', version: 1, exportado: new Date().toISOString(), datos: db }, null, 1)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'parte-diario-' + hoyK() + '.json';
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  db.ultimaCopia = hoyK(); guardar(); render();
+}
+$('#file').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const j = JSON.parse(await f.text());
+    const d = j.datos || j;
+    if (!d || typeof d.partes !== 'object') throw 0;
+    for (const [k, p] of Object.entries(d.partes)) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(k) || !Array.isArray(p.fincas)) throw 0;
+    }
+    ui.sheet = { type: 'importar', datos: d, n: Object.keys(d.partes).length }; render();
+  } catch (_) { alert('El archivo no es una copia válida de Parte Diario.'); }
+});
+function aplicarImport(d) {
+  for (const [k, p] of Object.entries(d.partes)) {
+    db.partes[k] = { creado: p.creado || Date.now(), fincas: p.fincas.map((f, i) => ({ id: uid(), nombre: up(f.nombre), c: f.c == null ? i % 4 : f.c % 4, tareas: (f.tareas || []).map(t => ({ id: uid(), nombre: up(t.nombre), n: Math.max(0, Math.min(999, parseInt(t.n, 10) || 0)) })) })) };
+  }
+  if (d.redactor && db.redactor === 'YIYO') db.redactor = up(d.redactor);
+  guardar(); ui.sheet = null; render();
+}
+
+/* ───────── PWA ───────── */
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; });
+window.addEventListener('appinstalled', () => { deferred = null; render(); });
+async function instalar() {
+  if (deferred) { deferred.prompt(); await deferred.userChoice; deferred = null; render(); return; }
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  ui.msgInstalar = ios ? 'En Safari: toca el botón Compartir y elige «Añadir a pantalla de inicio».' : 'Abre el menú del navegador (⋮) y elige «Instalar aplicación» o «Añadir a pantalla de inicio».';
+  render();
+}
+(function pwa() {
+  try {
+    const c = document.createElement('canvas'); c.width = c.height = 512;
+    const x = c.getContext('2d');
+    x.fillStyle = '#1D6630'; x.fillRect(0, 0, 512, 512);
+    x.fillStyle = '#fff'; x.fillRect(136, 120, 240, 290); x.fillStyle = '#1D6630'; x.fillRect(136, 120, 240, 60);
+    x.fillStyle = '#1D6630'; for (let i = 0; i < 3; i++) x.fillRect(172, 216 + i * 56, 168, 20);
+    c.toBlob(b => {
+      const url = URL.createObjectURL(b);
+      const l = document.createElement('link'); l.rel = 'apple-touch-icon'; l.href = c.toDataURL('image/png'); document.head.appendChild(l);
+      const man = { name: 'Parte Diario', short_name: 'Parte Diario', lang: 'es', display: 'standalone', orientation: 'portrait', background_color: '#F2F3EF', theme_color: '#1D6630', start_url: location.href.split('#')[0], scope: location.href.split('#')[0].replace(/[^/]*$/, ''), icons: [{ src: c.toDataURL('image/png'), sizes: '512x512', type: 'image/png', purpose: 'any' }, { src: c.toDataURL('image/png'), sizes: '512x512', type: 'image/png', purpose: 'maskable' }] };
+      const m = document.createElement('link'); m.rel = 'manifest';
+      m.href = URL.createObjectURL(new Blob([JSON.stringify(man)], { type: 'application/manifest+json' }));
+      document.head.appendChild(m);
+    }, 'image/png');
+  } catch (_) {}
+  if ('serviceWorker' in navigator && /^https?:/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {});
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+})();
+
+render();
+</script>
+</body>
+</html>
